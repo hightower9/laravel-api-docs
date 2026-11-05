@@ -1,0 +1,4 @@
+paths:
+  api/demo/items:
+    get:
+      description: Overlay description.
