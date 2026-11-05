@@ -8,15 +8,9 @@ Requires PHP 8.2+ and Laravel 12.
 
 Follow these steps in the root of the Laravel project.
 
-### 1. Get access
+### 1. Install the package
 
-The package lives in a private repo, so Composer needs a GitHub login.
-
-- **Developers:** use your own GitHub account, which must have access to `hightower9/laravel-api-docs`. Composer asks for a token the first time.
-- **Servers and CI:** use the read-only token limited to this repo (see step 7).
-- Never commit `auth.json` or the token.
-
-### 2. Install the package
+The package isn't on Packagist, so tell Composer where to find it first:
 
 ```bash
 composer config repositories.laravel-api-docs vcs https://github.com/hightower9/laravel-api-docs.git
@@ -25,7 +19,7 @@ composer require hightower9/laravel-api-docs
 
 Laravel discovers the service provider automatically, so there is nothing to register.
 
-### 3. Publish the config and starter intro
+### 2. Publish the config and starter intro
 
 ```bash
 php artisan vendor:publish --tag=api-docs-config
@@ -34,14 +28,13 @@ php artisan vendor:publish --tag=api-docs-overlays
 
 This creates `config/api-docs.php` and `docs/api/_intro.md`. Both belong to the project, so commit them.
 
-### 4. Update `.gitignore`
+### 3. Update `.gitignore`
 
 ```gitignore
 /public/docs
-auth.json
 ```
 
-### 5. Describe your API in `config/api-docs.php`
+### 4. Describe your API in `config/api-docs.php`
 
 Add one portal per API audience. Most projects need only one:
 
@@ -73,7 +66,7 @@ If one portal's prefix sits inside another's, such as `api/v1` and `api/v1/admin
 
 The top-level `exclude` applies to every portal, so don't use it for this. If the project has its own pagination helpers, list them under `pagination`.
 
-### 6. Build and check it
+### 5. Build and check it
 
 ```bash
 php artisan api-docs:generate
@@ -81,19 +74,15 @@ php artisan api-docs:generate
 
 Open `/docs` and confirm that the endpoints are listed, you can log in through **Try it**, and a request succeeds. The command lists any FormRequest it couldn't read. While working on the docs, `php artisan api-docs:generate --watch` rebuilds on save.
 
-### 7. Add it to the deploy
+### 6. Add it to the deploy
 
-The deploy needs a token to download the package, and it must build the docs after installing dependencies:
+The deploy must build the docs after installing dependencies:
 
 ```bash
-composer config --global github-oauth.github.com "$COMPOSER_GITHUB_TOKEN"
 composer install --no-interaction --prefer-dist --optimize-autoloader
 php artisan api-docs:generate --no-interaction
 ```
 
-- Store the token in GitHub Actions secrets or on the server, never in the repo. Setting `COMPOSER_AUTH` works too.
-- GitHub deploy keys are tied to a single repo, so a server's existing key won't give it access to this package.
-- **Docker:** run `composer install` where `vendor/` is built, and pass the token as a build secret so it doesn't stay in an image layer.
 - **Separate web server container:** `api-docs:generate` writes to the app container's `public/docs`. If the web server gets `public/` from somewhere else, such as a host folder, mount `public/docs` into both containers, or the page loads but its specs and assets return 404.
 - `www-data` (or whichever user runs the command) must be able to write to `public/docs`.
 
