@@ -1,11 +1,11 @@
 <?php
 
-namespace Souqbox\ApiDocs\Tests\Feature;
+namespace Hightower9\ApiDocs\Tests\Feature;
 
 use Illuminate\Support\Facades\File;
-use Souqbox\ApiDocs\ApiDocsBuilder;
-use Souqbox\ApiDocs\Http\ApiDocsController;
-use Souqbox\ApiDocs\Tests\TestCase;
+use Hightower9\ApiDocs\ApiDocsBuilder;
+use Hightower9\ApiDocs\Http\ApiDocsController;
+use Hightower9\ApiDocs\Tests\TestCase;
 
 /**
  * Covers building, checking and serving the static API docs site.
@@ -95,6 +95,21 @@ class ApiDocsTest extends TestCase
 
         app(ApiDocsBuilder::class)->build(['demo']);
         $this->assertArrayHasKey('message', $schema()['properties']['data']['properties']);
+    }
+
+    /**
+     * Sidebar groups are derived from whichever listed namespace the controller belongs to.
+     */
+    public function test_controllers_can_list_several_namespaces(): void
+    {
+        config(['api-docs.portals.demo.controllers' => ['Some\Other\Controllers', 'Hightower9\ApiDocs\Tests\Fixtures']]);
+
+        app(ApiDocsBuilder::class)->build(['demo']);
+
+        $groups = array_column($this->spec()['x-tagGroups'], 'name');
+
+        $this->assertContains('General', $groups);
+        $this->assertNotContains('Hightower9', $groups);
     }
 
     /**

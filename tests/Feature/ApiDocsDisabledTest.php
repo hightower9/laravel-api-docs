@@ -1,8 +1,8 @@
 <?php
 
-namespace Souqbox\ApiDocs\Tests\Feature;
+namespace Hightower9\ApiDocs\Tests\Feature;
 
-use Souqbox\ApiDocs\Tests\TestCase;
+use Hightower9\ApiDocs\Tests\TestCase;
 
 /**
  * Covers the app when the docs are turned off before it boots.

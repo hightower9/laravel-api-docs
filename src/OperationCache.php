@@ -1,6 +1,6 @@
 <?php
 
-namespace Souqbox\ApiDocs;
+namespace Hightower9\ApiDocs;
 
 use Illuminate\Support\Facades\File;
 use stdClass;

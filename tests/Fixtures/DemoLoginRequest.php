@@ -1,6 +1,6 @@
 <?php
 
-namespace Souqbox\ApiDocs\Tests\Fixtures;
+namespace Hightower9\ApiDocs\Tests\Fixtures;
 
 use Illuminate\Foundation\Http\FormRequest;
 

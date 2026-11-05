@@ -1,8 +1,8 @@
 <?php
 
-namespace Souqbox\ApiDocs\Http;
+namespace Hightower9\ApiDocs\Http;
 
-use Souqbox\ApiDocs\ApiDocsBuilder;
+use Hightower9\ApiDocs\ApiDocsBuilder;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\File;

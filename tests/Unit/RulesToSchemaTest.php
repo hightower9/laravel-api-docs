@@ -1,8 +1,8 @@
 <?php
 
-namespace Souqbox\ApiDocs\Tests\Unit;
+namespace Hightower9\ApiDocs\Tests\Unit;
 
-use Souqbox\ApiDocs\RulesToSchema;
+use Hightower9\ApiDocs\RulesToSchema;
 use Illuminate\Validation\Rule;
 use PHPUnit\Framework\TestCase;
 

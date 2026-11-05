@@ -1,6 +1,6 @@
 <?php
 
-namespace Souqbox\ApiDocs;
+namespace Hightower9\ApiDocs;
 
 use Generator;
 use Illuminate\Routing\Route;
@@ -256,9 +256,11 @@ class OpenApiGenerator
      * Get the sidebar [group, tag] from the controller folder, e.g. Sales\ForecastTool => [Sales,
      * Forecast Tool].
      */
-    private function classify(string $class, string $root): array
+    private function classify(string $class, string|array $roots): array
     {
-        $relative = Str::startsWith($class, "{$root}\\")
+        $root = collect((array) $roots)->first(fn (string $root) => Str::startsWith($class, "{$root}\\"));
+
+        $relative = $root !== null
             ? Str::after($class, "{$root}\\")
             : Str::afterLast($class, 'Controllers\\');
 

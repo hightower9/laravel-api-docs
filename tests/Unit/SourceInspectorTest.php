@@ -1,8 +1,8 @@
 <?php
 
-namespace Souqbox\ApiDocs\Tests\Unit;
+namespace Hightower9\ApiDocs\Tests\Unit;
 
-use Souqbox\ApiDocs\SourceInspector;
+use Hightower9\ApiDocs\SourceInspector;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 

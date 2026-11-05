@@ -4,32 +4,81 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | API Documentation
+    | Documentation Status
     |--------------------------------------------------------------------------
     |
-    | "php artisan api-docs:generate" builds a static docs site into public/<path>
-    | from the registered routes and FormRequest rules, enriched with the YAML /
-    | Markdown files in "overlay_path". When disabled (production by default)
-    | the command generates nothing and removes any previous build.
+    | Determines whether the documentation is built and served. When disabled,
+    | "php artisan api-docs:generate" builds nothing and removes any previous
+    | build, so the site cannot be exposed by accident. By default, it will
+    | be enabled in every environment except for production.
     |
     */
 
     'enabled' => (bool) env('API_DOCS_ENABLED', env('APP_ENV') !== 'production'),
 
-    // URL path of the docs, and the folder under public/ the static site is written to.
+    /*
+    |--------------------------------------------------------------------------
+    | Documentation Path
+    |--------------------------------------------------------------------------
+    |
+    | The URL path the documentation is served from. This value also names
+    | the folder inside "public" that the static site is written to, which
+    | should be excluded from version control as it is a build artifact.
+    |
+    */
+
     'path' => 'docs',
 
-    // Shown in the page title and the header.
+    /*
+    |--------------------------------------------------------------------------
+    | Documentation Title
+    |--------------------------------------------------------------------------
+    |
+    | The name shown in the page title and header. The first letter of this
+    | value is also used for the favicon and the mark shown in the sidebar.
+    |
+    */
+
     'title' => env('APP_NAME', 'Laravel') . ' API',
 
-    // The "info.version" of every generated spec.
+    /*
+    |--------------------------------------------------------------------------
+    | API Version
+    |--------------------------------------------------------------------------
+    |
+    | The version of your API, published as "info.version" in every generated
+    | OpenAPI document. This is independent of the version of this package.
+    |
+    */
+
     'version' => env('API_DOCS_VERSION', '1.0.0'),
 
-    // Hand-written intro Markdown and YAML fragments merged into the generated specs.
+    /*
+    |--------------------------------------------------------------------------
+    | Overlay Path
+    |--------------------------------------------------------------------------
+    |
+    | The folder holding your hand-written documentation. Intro Markdown and
+    | OpenAPI YAML fragments found here are merged over the generated specs,
+    | allowing you to enrich any endpoint without changing application code.
+    |
+    */
+
     'overlay_path' => base_path('docs/api'),
 
-    // Extra servers the "Try it" console can send requests to, besides the one serving the docs.
-    // Comma separated Name=URL pairs, e.g. "Dev=https://dev-api.example.com,UAT=https://uat-api.example.com".
+    /*
+    |--------------------------------------------------------------------------
+    | Additional Servers
+    |--------------------------------------------------------------------------
+    |
+    | Extra environments the "Try it" console can send requests to, alongside
+    | the server hosting the documentation. Define these as comma separated
+    | Name=URL pairs in the API_DOCS_SERVERS environment variable, such as:
+    |
+    | API_DOCS_SERVERS="Dev=https://dev.example.com,UAT=https://uat.example.com"
+    |
+    */
+
     'servers' => collect(explode(',', (string) env('API_DOCS_SERVERS', '')))
         ->map(fn (string $pair) => array_map('trim', explode('=', $pair, 2)))
         ->filter(fn (array $pair) => count($pair) === 2 && filter_var($pair[1], FILTER_VALIDATE_URL))
@@ -37,7 +86,17 @@ return [
         ->values()
         ->all(),
 
-    // "api-docs:generate --watch" rebuilds when one of these changes (globs, relative to the project root).
+    /*
+    |--------------------------------------------------------------------------
+    | Watched Paths
+    |--------------------------------------------------------------------------
+    |
+    | The files and folders observed by "php artisan api-docs:generate --watch"
+    | which trigger a rebuild when changed. Each entry is a glob pattern that
+    | is relative to the root of your project.
+    |
+    */
+
     'watch' => [
         'app/Http',
         'routes',
@@ -45,22 +104,55 @@ return [
         'config/api-docs.php',
     ],
 
-    // Route URIs left out of the docs (Str::is patterns).
+    /*
+    |--------------------------------------------------------------------------
+    | Excluded Routes
+    |--------------------------------------------------------------------------
+    |
+    | Route URIs left out of every portal. Wildcards are supported using the
+    | "*" character. To leave a route out of a single portal only, use the
+    | "exclude" option of that portal instead.
+    |
+    */
+
     'exclude' => [],
 
-    // The key error messages are wrapped in, e.g. "data" for { "data": { "message": "…" } }.
+    /*
+    |--------------------------------------------------------------------------
+    | Error Envelope
+    |--------------------------------------------------------------------------
+    |
+    | The key your API wraps error messages in. For example, "data" documents
+    | errors as { "data": { "message": "..." } }. When this value is null,
+    | Laravel's default top level { "message": "..." } format is documented.
+    |
+    */
+
     'error_envelope' => null,
 
-    // What marks an endpoint as paginated, and the query parameters that documents.
+    /*
+    |--------------------------------------------------------------------------
+    | Pagination
+    |--------------------------------------------------------------------------
+    |
+    | Determines how paginated endpoints are detected and documented.
+    |
+    | "methods" maps code found in a controller to the query parameters it
+    | accepts, and the first match wins. List any custom pagination helpers
+    | used by your application above the defaults.
+    |
+    | "size_parameter" is also documented when a controller reads that input
+    | by name, and "parameters" defines the schema of each query parameter.
+    |
+    */
+
     'pagination' => [
-        // Code found in the controller => the parameters it accepts. The first match wins.
         'methods' => [
             'simplePaginate(' => ['page'],
             'cursorPaginate(' => ['page'],
             '->paginate('     => ['page'],
         ],
 
-        // Also documented when the controller reads this input by name.
         'size_parameter' => 'per_page',
 
         'parameters' => [
@@ -69,15 +161,35 @@ return [
         ],
     ],
 
-    // One docs portal per API audience. "prefixes" select its routes, "controllers" is the
-    // namespace the sidebar groups are derived from, "login" / "logout" drive the token handling.
-    //
-    // Optional per portal:
-    //   token_path     Where the login response holds the token (default "data.token").
-    //   bearer_format  Shown on the token scheme, e.g. "JWT".
-    //   exclude        Route URIs left out of this portal only (Str::is patterns).
-    //   api_key        Routes that use a header key instead of a token:
-    //                  scheme, header, description, middleware (list), guards (list).
+    /*
+    |--------------------------------------------------------------------------
+    | Portals
+    |--------------------------------------------------------------------------
+    |
+    | Each portal documents the API of one audience, and the documentation
+    | page offers a switcher between them. The following options are required:
+    |
+    | title        The name of the portal.
+    | prefixes     The route URI prefixes that belong to this portal.
+    | guard        The authentication guard protecting these routes.
+    | controllers  The namespace, or list of namespaces, that the sidebar
+    |              groups are derived from.
+    | login        The URI of the login route, used to capture the token.
+    | logout       The URI of the logout route, used to clear the token.
+    |
+    | The following options may also be used where they are needed:
+    |
+    | token_path     The location of the token in the login response, using
+    |                "dot" notation. Defaults to "data.token".
+    | bearer_format  The token format shown in the docs, such as "JWT".
+    | exclude        Route URIs left out of this portal only.
+    | api_key        Documents routes that authenticate using a header key
+    |                instead of a token. Accepts "scheme", "header" and
+    |                "description", and is applied to the routes matching
+    |                its "middleware" and "guards" lists.
+    |
+    */
+
     'portals' => [
         'api' => [
             'title'       => 'API',

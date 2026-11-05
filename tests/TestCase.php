@@ -1,11 +1,11 @@
 <?php
 
-namespace Souqbox\ApiDocs\Tests;
+namespace Hightower9\ApiDocs\Tests;
 
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase as BaseTestCase;
-use Souqbox\ApiDocs\ApiDocsServiceProvider;
-use Souqbox\ApiDocs\Tests\Fixtures\DemoController;
+use Hightower9\ApiDocs\ApiDocsServiceProvider;
+use Hightower9\ApiDocs\Tests\Fixtures\DemoController;
 
 /**
  * Boots a Laravel app with the package, one demo portal and fixture routes.
@@ -38,7 +38,7 @@ abstract class TestCase extends BaseTestCase
                 'title'       => 'Demo API',
                 'prefixes'    => ['api/demo'],
                 'guard'       => 'sanctum',
-                'controllers' => 'Souqbox\ApiDocs\Tests\Fixtures',
+                'controllers' => 'Hightower9\ApiDocs\Tests\Fixtures',
                 'login'       => 'api/demo/login',
                 'logout'      => 'api/demo/logout',
                 'token_path'  => 'token',

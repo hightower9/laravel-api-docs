@@ -1,9 +1,9 @@
 <?php
 
-namespace Souqbox\ApiDocs\Console;
+namespace Hightower9\ApiDocs\Console;
 
 use Illuminate\Console\Command;
-use Souqbox\ApiDocs\ApiDocsBuilder;
+use Hightower9\ApiDocs\ApiDocsBuilder;
 use Illuminate\Support\Facades\Process;
 
 /**

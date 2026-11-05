@@ -1,6 +1,6 @@
 <?php
 
-namespace Souqbox\ApiDocs;
+namespace Hightower9\ApiDocs;
 
 use ReflectionClass;
 use ReflectionMethod;

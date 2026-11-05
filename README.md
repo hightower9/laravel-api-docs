@@ -125,7 +125,7 @@ The usual Laravel nginx config already serves `public/docs`. The `/docs` Laravel
 | `pagination` | Which code marks an endpoint as paginated, and the parameters that documents |
 | `portals` | One entry per API audience |
 
-Each portal needs `title`, `prefixes`, `guard`, `controllers`, `login` and `logout`. These are optional:
+Each portal needs `title`, `prefixes`, `guard`, `controllers`, `login` and `logout`. `controllers` can be a list if the portal spans several namespaces. These are optional:
 
 | Key | Purpose |
 | --- | --- |

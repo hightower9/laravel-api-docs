@@ -1,12 +1,12 @@
 <?php
 
-namespace Souqbox\ApiDocs;
+namespace Hightower9\ApiDocs;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
-use Souqbox\ApiDocs\Console\ApiDocsClearCommand;
-use Souqbox\ApiDocs\Console\ApiDocsGenerateCommand;
-use Souqbox\ApiDocs\Http\ApiDocsController;
+use Hightower9\ApiDocs\Console\ApiDocsClearCommand;
+use Hightower9\ApiDocs\Console\ApiDocsGenerateCommand;
+use Hightower9\ApiDocs\Http\ApiDocsController;
 
 /**
  * Registers the config, views and commands, the /docs route and the "php artisan optimize" hook.

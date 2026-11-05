@@ -21,18 +21,18 @@
     },
     "autoload": {
         "psr-4": {
-            "Souqbox\\ApiDocs\\": "src/"
+            "Hightower9\\ApiDocs\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Souqbox\\ApiDocs\\Tests\\": "tests/"
+            "Hightower9\\ApiDocs\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Souqbox\\ApiDocs\\ApiDocsServiceProvider"
+                "Hightower9\\ApiDocs\\ApiDocsServiceProvider"
             ]
         }
     },

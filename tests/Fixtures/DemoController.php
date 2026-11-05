@@ -1,6 +1,6 @@
 <?php
 
-namespace Souqbox\ApiDocs\Tests\Fixtures;
+namespace Hightower9\ApiDocs\Tests\Fixtures;
 
 /**
  * Controller fixture documented by the feature tests; its methods are read, never called.
