@@ -14,14 +14,14 @@ Follow these steps in the root of the Laravel project.
 
 The package lives in a private repo, so Composer needs a GitHub login.
 
-- **Developers:** use your own GitHub account, which must belong to the `SOUQBOX` organisation. Composer asks for a token the first time.
+- **Developers:** use your own GitHub account, which must have access to `hightower9/laravel-api-docs`. Composer asks for a token the first time.
 - **Servers and CI:** use the read-only token limited to this repo (see step 7).
 - Never commit `auth.json` or the token.
 
 ### 2. Install the package
 
 ```bash
-composer config repositories.laravel-api-docs vcs https://github.com/SOUQBOX/laravel-api-docs.git
+composer config repositories.laravel-api-docs vcs https://github.com/hightower9/laravel-api-docs.git
 composer require souqbox/laravel-api-docs
 ```
 
