@@ -61,7 +61,19 @@ Add one portal per API audience. Most projects need only one:
 ],
 ```
 
-Check `token_path` against a real login response, or the "Try it" console won't save the token. If one prefix sits inside another, such as `api/v1` and `api/v1/admin`, add the inner one to `exclude` or to the right portal, so routes don't appear twice. If the project has its own pagination helpers, list them under `pagination`.
+Check `token_path` against a real login response, or the "Try it" console won't save the token. For example, a login that returns `{ "data": { "access_token": "…" } }` needs `data.access_token`.
+
+If one portal's prefix sits inside another's, such as `api/v1` and `api/v1/admin`, give the outer portal its own `exclude` so routes don't appear twice:
+
+```php
+'tenant' => [
+    'prefixes' => ['api/v1'],
+    'exclude'  => ['api/v1/admin', 'api/v1/admin/*'],
+    // ...
+],
+```
+
+The top-level `exclude` applies to every portal, so don't use it for this. If the project has its own pagination helpers, list them under `pagination`.
 
 ### 6. Build and check it
 
@@ -84,6 +96,7 @@ php artisan api-docs:generate --no-interaction
 - Store the token in GitHub Actions secrets or on the server, never in the repo. Setting `COMPOSER_AUTH` works too.
 - GitHub deploy keys are tied to a single repo, so a server's existing key won't give it access to this package.
 - **Docker:** run `composer install` where `vendor/` is built, and pass the token as a build secret so it doesn't stay in an image layer.
+- **Separate web server container:** `api-docs:generate` writes to the app container's `public/docs`. If the web server gets `public/` from somewhere else, such as a host folder, mount `public/docs` into both containers, or the page loads but its specs and assets return 404.
 - `www-data` (or whichever user runs the command) must be able to write to `public/docs`.
 
 Set these in each environment's `.env`:
@@ -124,6 +137,7 @@ The usual Laravel nginx config already serves `public/docs`. The `/docs` Laravel
 | `servers` | Extra "Try it" targets, from `API_DOCS_SERVERS="Dev=https://dev.example.com,UAT=https://uat.example.com"` |
 | `watch` | Files `--watch` observes |
 | `exclude` | Route URIs to leave out (`Str::is` patterns) |
+| `error_envelope` | The key error messages are wrapped in, such as `data`. Leave it `null` for Laravel's `{ "message": "…" }`. |
 | `pagination` | Which code marks an endpoint as paginated, and the parameters that documents |
 | `portals` | One entry per API audience |
 
@@ -133,6 +147,7 @@ Each portal needs `title`, `prefixes`, `guard`, `controllers`, `login` and `logo
 | --- | --- |
 | `token_path` | Where the login response holds the token. Default `data.token`. |
 | `bearer_format` | Shown on the token scheme, e.g. `JWT`. |
+| `exclude` | Route URIs left out of this portal only (`Str::is` patterns). |
 | `api_key` | Routes that use a header key instead of a token: `scheme`, `header`, `description`, `middleware`, `guards`. |
 
 ## Enriching the docs

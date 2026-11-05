@@ -48,6 +48,9 @@ return [
     // Route URIs left out of the docs (Str::is patterns).
     'exclude' => [],
 
+    // The key error messages are wrapped in, e.g. "data" for { "data": { "message": "…" } }.
+    'error_envelope' => null,
+
     // What marks an endpoint as paginated, and the query parameters that documents.
     'pagination' => [
         // Code found in the controller => the parameters it accepts. The first match wins.
@@ -72,6 +75,7 @@ return [
     // Optional per portal:
     //   token_path     Where the login response holds the token (default "data.token").
     //   bearer_format  Shown on the token scheme, e.g. "JWT".
+    //   exclude        Route URIs left out of this portal only (Str::is patterns).
     //   api_key        Routes that use a header key instead of a token:
     //                  scheme, header, description, middleware (list), guards (list).
     'portals' => [

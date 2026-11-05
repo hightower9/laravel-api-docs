@@ -161,7 +161,9 @@ class OpenApiGenerator
     {
         $uri = $route->uri();
 
-        if ($route->getActionName() === 'Closure' || Str::is(config('api-docs.exclude'), $uri)) {
+        $excluded = [...config('api-docs.exclude'), ...($config['exclude'] ?? [])];
+
+        if ($route->getActionName() === 'Closure' || Str::is($excluded, $uri)) {
             return false;
         }
 
@@ -526,15 +528,12 @@ class OpenApiGenerator
      */
     private function components(string $portal, array $config): array
     {
-        $message = fn (string $example): array => [
-            'type'       => 'object',
-            'properties' => [
-                'data' => [
-                    'type'       => 'object',
-                    'properties' => ['message' => ['type' => 'string', 'examples' => [$example]]],
-                ],
-            ],
-        ];
+        $message = function (string $example): array {
+            $schema = ['type' => 'object', 'properties' => ['message' => ['type' => 'string', 'examples' => [$example]]]];
+            $envelope = config('api-docs.error_envelope');
+
+            return $envelope ? ['type' => 'object', 'properties' => [$envelope => $schema]] : $schema;
+        };
 
         $securitySchemes = [
             "{$portal}Auth" => array_filter([

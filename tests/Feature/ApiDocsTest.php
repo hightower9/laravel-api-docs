@@ -82,6 +82,40 @@ class ApiDocsTest extends TestCase
     }
 
     /**
+     * Error messages are top-level by default, and wrapped when an envelope is set.
+     */
+    public function test_error_envelope_wraps_error_messages(): void
+    {
+        $schema = fn () => $this->spec()['components']['responses']['Forbidden']['content']['application/json']['schema'];
+
+        app(ApiDocsBuilder::class)->build(['demo']);
+        $this->assertArrayHasKey('message', $schema()['properties']);
+
+        config(['api-docs.error_envelope' => 'data']);
+
+        app(ApiDocsBuilder::class)->build(['demo']);
+        $this->assertArrayHasKey('message', $schema()['properties']['data']['properties']);
+    }
+
+    /**
+     * A portal's exclude leaves routes out of that portal only.
+     */
+    public function test_portal_exclude_leaves_routes_out_of_that_portal(): void
+    {
+        config([
+            'api-docs.portals.demo.exclude' => ['api/demo/device'],
+            'api-docs.portals.other'        => ['prefixes' => ['api/demo/device']] + config('api-docs.portals.demo'),
+        ]);
+        config(['api-docs.portals.other.exclude' => []]);
+
+        $results = app(ApiDocsBuilder::class)->build(['demo', 'other']);
+
+        $this->assertSame(3, $results['demo']['operations']);
+        $this->assertArrayNotHasKey('/api/demo/device', $this->spec()['paths']);
+        $this->assertSame(1, $results['other']['operations']);
+    }
+
+    /**
      * A portal's api_key adds the scheme and applies it to the routes it matches.
      */
     public function test_api_key_routes_use_the_configured_scheme(): void
