@@ -159,6 +159,21 @@ class ApiDocsTest extends TestCase
     }
 
     /**
+     * The favicon shows the first letter of the title.
+     */
+    public function test_index_page_has_a_favicon_with_the_title_initial(): void
+    {
+        config(['api-docs.title' => 'nimble API']);
+
+        app(ApiDocsBuilder::class)->build(['demo']);
+
+        preg_match('/<link rel="icon" type="image\/svg\+xml" href="data:image\/svg\+xml,([^"]+)">/', File::get(public_path(self::PATH . '/index.html')), $match);
+
+        $this->assertNotEmpty($match);
+        $this->assertStringContainsString('>N</text>', rawurldecode($match[1]));
+    }
+
+    /**
      * --check passes for a fresh build and fails once a spec differs.
      */
     public function test_check_detects_out_of_date_docs(): void

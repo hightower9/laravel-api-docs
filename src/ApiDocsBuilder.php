@@ -162,9 +162,10 @@ class ApiDocsBuilder
             ->values();
 
         return view('api-docs::index', [
-            'title'  => config('api-docs.title'),
-            'assets' => $this->publishAssets($base),
-            'config' => [
+            'title'   => config('api-docs.title'),
+            'favicon' => $this->favicon(),
+            'assets'  => $this->publishAssets($base),
+            'config'  => [
                 'title'       => config('api-docs.title'),
                 'portals'     => $portals,
                 'servers'     => config('api-docs.servers'),
@@ -173,6 +174,21 @@ class ApiDocsBuilder
                 'build'       => array_intersect_key($manifest, array_flip(['version', 'commit', 'generatedAt'])),
             ],
         ])->render();
+    }
+
+    /**
+     * Get the favicon as a data URI: the first letter of the title, matching the sidebar mark.
+     */
+    private function favicon(): string
+    {
+        $letter = htmlspecialchars(mb_strtoupper(mb_substr((string) config('api-docs.title'), 0, 1)));
+
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+            . '<rect width="32" height="32" rx="8" fill="#0284c7"/>'
+            . '<text x="16" y="23" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" text-anchor="middle">'
+            . $letter . '</text></svg>';
+
+        return 'data:image/svg+xml,' . rawurlencode($svg);
     }
 
     /**
