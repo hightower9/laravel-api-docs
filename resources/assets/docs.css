@@ -499,9 +499,8 @@ kbd {
 /* Sidebar */
 
 .portal-switch {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 2px;
     margin: 12px 12px 4px;
     padding: 3px;
@@ -511,12 +510,18 @@ kbd {
 }
 
 .portal-switch__item {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
     padding: 5px 8px;
     border-radius: 7px;
     color: var(--text-soft);
     font-size: 13px;
     font-weight: 500;
     text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .portal-switch__item:hover {
