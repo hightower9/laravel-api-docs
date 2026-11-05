@@ -1,7 +1,5 @@
 # Laravel API Docs
 
-**Private to Souqbox. Do not publish this package, submit it to Packagist, or share it outside the company.**
-
 Generates a static API docs site from your Laravel routes, controllers and FormRequests, with no annotations. `php artisan api-docs:generate` writes the site to `public/docs/`, and the web server serves it directly, so opening the docs never boots Laravel.
 
 Requires PHP 8.2+ and Laravel 12.
@@ -22,7 +20,7 @@ The package lives in a private repo, so Composer needs a GitHub login.
 
 ```bash
 composer config repositories.laravel-api-docs vcs https://github.com/hightower9/laravel-api-docs.git
-composer require souqbox/laravel-api-docs
+composer require hightower9/laravel-api-docs
 ```
 
 Laravel discovers the service provider automatically, so there is nothing to register.
@@ -195,13 +193,13 @@ To try a change in a project before releasing it, point the project at your loca
 
 ```bash
 composer config repositories.laravel-api-docs path ../laravel-api-docs
-composer update souqbox/laravel-api-docs
+composer update hightower9/laravel-api-docs
 ```
 
 ## Releasing a fix
 
 1. Fix it here, and tag a release: `v1.0.1` for a fix, `v1.1.0` for a feature, `v2.0.0` for a breaking change.
-2. In each project, run `composer update souqbox/laravel-api-docs` and commit `composer.lock`.
+2. In each project, run `composer update hightower9/laravel-api-docs` and commit `composer.lock`.
 3. Deploy. `api-docs:generate` rebuilds the specs and assets.
 
 Projects only change when their `composer.lock` does, so a release never reaches a project until someone updates it.

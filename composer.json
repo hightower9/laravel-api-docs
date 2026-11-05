@@ -1,6 +1,6 @@
 {
-    "name": "souqbox/laravel-api-docs",
-    "description": "Generates a static API docs site from Laravel routes and FormRequests. Private to Souqbox.",
+    "name": "hightower9/laravel-api-docs",
+    "description": "Generates a static API docs site from Laravel routes and FormRequests.",
     "type": "library",
     "license": "proprietary",
     "require": {
