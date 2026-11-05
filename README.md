@@ -10,10 +10,7 @@ Follow these steps in the root of the Laravel project.
 
 ### 1. Install the package
 
-The package isn't on Packagist, so tell Composer where to find it first:
-
 ```bash
-composer config repositories.laravel-api-docs vcs https://github.com/hightower9/laravel-api-docs.git
 composer require hightower9/laravel-api-docs
 ```
 
@@ -192,3 +189,7 @@ composer update hightower9/laravel-api-docs
 3. Deploy. `api-docs:generate` rebuilds the specs and assets.
 
 Projects only change when their `composer.lock` does, so a release never reaches a project until someone updates it.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
