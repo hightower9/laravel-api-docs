@@ -254,7 +254,7 @@ class OpenApiGenerator
 
     /**
      * Get the sidebar [group, tag] from the controller folder, e.g. Sales\ForecastTool => [Sales,
-     * Forecast Tool].
+     * Forecast Tool]. Deeper folders join with " / ", which the docs page nests back into folders.
      */
     private function classify(string $class, string|array $roots): array
     {

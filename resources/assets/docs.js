@@ -47,6 +47,10 @@
     const ui = {};
     const specs = {};
     const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+    const SIDEBAR_MIN = 220;
+    const SIDEBAR_MAX = 480;
+    const SIDEBAR_STEP = 16;
+    const SIDEBAR_WIDTH_KEY = 'api-docs.sidebar-width';
     let routeToken = 0;
 
     /**
@@ -446,20 +450,57 @@
 
                 return tag;
             });
+            group.folders = folderTree(group.tags);
 
             return group;
         }).filter((group) => group.tags.length);
 
         return {
             ops,
-            // Sidebar order (group → tag → endpoint); Previous / Next walk this, not route registration order.
-            sequence: groups.flatMap((group) => group.tags.flatMap((tag) => tag.ops)),
+            // Sidebar order (group → folders → endpoint); Previous / Next walk this, not route registration order.
+            sequence: groups.flatMap((group) => group.folders.flatMap(folderOps)),
             byId: new Map(ops.map((entry) => [entry.id, entry])),
             tags,
             groups,
             intro: introSections(spec.info?.description || ''),
         };
     }
+
+    /**
+     * Nest a group's tags into folders by their "A / B" labels; a folder can hold endpoints, subfolders or both.
+     */
+    function folderTree(tags) {
+        const root = { children: [] };
+
+        for (const tag of tags) {
+            const names = tag.label.split(' / ');
+            let folder = root;
+
+            names.forEach((name, depth) => {
+                const isLast = depth === names.length - 1;
+                // Two tags sharing a label stay separate rows, as a folder shows one tag's endpoints.
+                let child = folder.children.find((item) => item.name === name && !(isLast && item.tag));
+
+                if (!child) {
+                    child = { name, parent: folder, tag: null, children: [], count: 0 };
+                    folder.children.push(child);
+                }
+
+                child.count += tag.ops.length;
+                folder = child;
+            });
+
+            folder.tag = tag;
+            tag.folder = folder;
+        }
+
+        return root.children;
+    }
+
+    /**
+     * List a folder's endpoints in sidebar order: its own, then each subfolder's.
+     */
+    const folderOps = (folder) => [...(folder.tag?.ops || []), ...folder.children.flatMap(folderOps)];
 
     /**
      * Split the intro Markdown into sections by "##" heading.
@@ -749,12 +790,90 @@
         ui.main = h('main', { class: 'main', id: 'docs-main', tabindex: '-1' });
         ui.toasts = h('div', { class: 'toasts', 'aria-live': 'polite' });
 
+        const resizer = h('div', {
+            class: 'sidebar-resizer',
+            role: 'separator',
+            tabindex: '0',
+            title: 'Drag to resize, double-click to reset',
+            'aria-orientation': 'vertical',
+            'aria-label': 'Resize sidebar',
+            'aria-valuemin': SIDEBAR_MIN,
+        });
+        ui.sidebar = h('aside', { class: 'sidebar' }, ui.switcher, ui.nav, resizer);
+
         fill(root,
             h('a', { class: 'skip-link', href: '#docs-main', onClick: (event) => { event.preventDefault(); ui.main.focus(); } }, 'Skip to content'),
             topbar,
-            h('div', { class: 'layout' }, h('aside', { class: 'sidebar' }, ui.switcher, ui.nav), ui.main),
+            h('div', { class: 'layout' }, ui.sidebar, ui.main),
             h('div', { class: 'scrim', onClick: () => document.body.classList.remove('nav-open') }),
             ui.toasts);
+
+        initSidebarResizer(resizer);
+    }
+
+    /**
+     * Get the widest the sidebar may be in this window; the 35vw also caps it in docs.css.
+     */
+    const sidebarMax = () => Math.min(SIDEBAR_MAX, Math.round(window.innerWidth * 0.35));
+
+    /**
+     * Make the sidebar resizable: drag the handle, use the arrow keys, or double-click to reset.
+     */
+    function initSidebarResizer(handle) {
+        const rootStyle = document.documentElement.style;
+        const syncAria = () => {
+            handle.setAttribute('aria-valuemax', sidebarMax());
+            handle.setAttribute('aria-valuenow', ui.sidebar.offsetWidth);
+        };
+        const resize = (width) => {
+            rootStyle.setProperty('--sidebar', `${Math.max(SIDEBAR_MIN, Math.min(width, sidebarMax()))}px`);
+            syncAria();
+        };
+        const save = () => storage.set(SIDEBAR_WIDTH_KEY, ui.sidebar.offsetWidth);
+
+        handle.addEventListener('pointerdown', (event) => {
+            if (event.button !== 0) {
+                return;
+            }
+
+            const startX = event.clientX;
+            const startWidth = ui.sidebar.offsetWidth;
+            const onMove = (move) => resize(startWidth + move.clientX - startX);
+
+            handle.setPointerCapture(event.pointerId);
+            handle.addEventListener('pointermove', onMove);
+            handle.addEventListener('lostpointercapture', () => {
+                handle.removeEventListener('pointermove', onMove);
+                document.body.classList.remove('sidebar-resizing');
+                save();
+            }, { once: true });
+            document.body.classList.add('sidebar-resizing');
+        });
+
+        handle.addEventListener('keydown', (event) => {
+            const width = ui.sidebar.offsetWidth;
+            const next = { ArrowLeft: width - SIDEBAR_STEP, ArrowRight: width + SIDEBAR_STEP, Home: SIDEBAR_MIN, End: sidebarMax() }[event.key];
+
+            if (next !== undefined) {
+                event.preventDefault();
+                resize(next);
+                save();
+            }
+        });
+
+        handle.addEventListener('dblclick', () => {
+            rootStyle.removeProperty('--sidebar');
+            storage.remove(SIDEBAR_WIDTH_KEY);
+            syncAria();
+        });
+
+        const saved = storage.get(SIDEBAR_WIDTH_KEY);
+        if (Number.isFinite(saved)) {
+            rootStyle.setProperty('--sidebar', `${saved}px`);
+        }
+
+        syncAria();
+        window.addEventListener('resize', debounce(syncAria));
     }
 
     /**
@@ -1098,10 +1217,10 @@
             if (flat) {
                 const tag = group.tags[0];
                 group.details.append(opsList(tag));
-                tag.details = group.details;
+                tag.folder.details = group.details;
                 group.details.addEventListener('toggle', () => group.details.open && tag.fill());
             } else {
-                group.tags.forEach((tag) => group.details.append(navTag(tag)));
+                group.details.append(...group.folders.map((folder) => navFolder(folder)));
             }
 
             return group.details;
@@ -1127,15 +1246,24 @@
     }
 
     /**
-     * Create a collapsible tag in the sidebar.
+     * Create a collapsible folder in the sidebar, with its endpoints and then its subfolders.
      */
-    function navTag(tag) {
-        tag.details = h('details', { class: 'nav__tag' },
-            h('summary', { class: 'nav__tag-title', dataset: { key: `tag:${tag.name}` } }, icon('chevron'), h('span', { class: 'nav__label' }, tag.label), h('span', { class: 'count' }, tag.ops.length)),
-            opsList(tag));
-        tag.details.addEventListener('toggle', () => tag.details.open && tag.fill());
+    function navFolder(folder) {
+        const { tag } = folder;
 
-        return tag.details;
+        folder.details = h('details', { class: 'nav__tag' },
+            h('summary', { class: 'nav__tag-title', dataset: tag && { key: `tag:${tag.name}` } },
+                icon('chevron'),
+                h('span', { class: 'nav__label', title: folder.name }, folder.name),
+                h('span', { class: 'count' }, folder.count)),
+            tag && opsList(tag),
+            folder.children.map((child) => navFolder(child)));
+
+        if (tag) {
+            folder.details.addEventListener('toggle', () => folder.details.open && tag.fill());
+        }
+
+        return folder.details;
     }
 
     /**
@@ -1149,7 +1277,9 @@
 
         if (tag) {
             tag.group.details.open = true;
-            tag.details.open = true;
+            for (let folder = tag.folder; folder.parent; folder = folder.parent) {
+                folder.details.open = true;
+            }
             tag.fill();
             key = kind === 'op' ? `op:${id}` : `tag:${id}`;
         }
@@ -1239,12 +1369,22 @@
     }
 
     /**
-     * Create the group › tag breadcrumb.
+     * Create the group › folder › subfolder breadcrumb. A folder links to its page, unless it has
+     * no endpoints of its own and so no page, or that page is the one being shown.
      */
-    function breadcrumb(tag) {
+    function breadcrumb(tag, currentTag = null) {
+        const folders = [];
+        for (let folder = tag.folder; folder.parent; folder = folder.parent) {
+            folders.unshift(folder);
+        }
+
+        const crumb = (folder) => folder.tag && folder.tag !== currentTag
+            ? h('a', { href: link(state.portal, 'tag', folder.tag.name) }, folder.name)
+            : h('span', {}, folder.name);
+
         return h('nav', { class: 'breadcrumb', 'aria-label': 'Breadcrumb' },
             h('span', {}, tag.group.name),
-            tag.label !== tag.group.name ? [icon('chevron'), h('a', { href: link(state.portal, 'tag', tag.name) }, tag.label)] : null);
+            tag.label !== tag.group.name ? folders.map((folder) => [icon('chevron'), crumb(folder)]) : null);
     }
 
     /**
@@ -1252,8 +1392,8 @@
      */
     function renderTag(tag) {
         fill(ui.main, h('div', { class: 'page' },
-            breadcrumb(tag),
-            h('h1', {}, tag.label),
+            breadcrumb(tag, tag),
+            h('h1', {}, tag.folder.name),
             tag.description ? h('div', { class: 'prose', html: markdown(tag.description) }) : null,
             h('div', { class: 'op-list' }, tag.ops.map((entry) => h('a', { class: 'op-row', href: link(state.portal, 'op', entry.id) },
                 methodPill(entry.method),

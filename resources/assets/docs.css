@@ -473,16 +473,56 @@ kbd {
 
 .layout {
     display: grid;
-    grid-template-columns: var(--sidebar) minmax(0, 1fr);
+    /* 35vw matches sidebarMax() in docs.js, and keeps a saved width from crowding out a narrower window. */
+    grid-template-columns: min(var(--sidebar), 35vw) minmax(0, 1fr);
     height: calc(100dvh - var(--topbar));
 }
 
 .sidebar {
+    position: relative;
     display: flex;
     flex-direction: column;
     min-height: 0;
     border-right: 1px solid var(--border);
     background: var(--bg-soft);
+}
+
+/* Sits mostly over the main area so it never covers the sidebar's scrollbar. */
+.sidebar-resizer {
+    position: absolute;
+    top: 0;
+    right: -8px;
+    bottom: 0;
+    z-index: 10;
+    width: 10px;
+    cursor: col-resize;
+    touch-action: none;
+}
+
+.sidebar-resizer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 1px;
+    width: 2px;
+    background: transparent;
+    transition: background 0.15s ease;
+}
+
+.sidebar-resizer:hover::after,
+.sidebar-resizer:focus-visible::after,
+.sidebar-resizing .sidebar-resizer::after {
+    background: var(--accent);
+}
+
+.sidebar-resizer:focus-visible {
+    outline: none;
+}
+
+.sidebar-resizing {
+    cursor: col-resize;
+    user-select: none;
 }
 
 .main {
@@ -604,7 +644,8 @@ details[open] > .nav__tag-title > .icon {
 }
 
 .nav__group > .nav__tag,
-.nav__group > .nav__ops {
+.nav__group > .nav__ops,
+.nav__tag > .nav__tag {
     margin-left: 14px;
     padding-left: 6px;
     border-left: 1px solid var(--border);
@@ -1003,6 +1044,7 @@ tr:last-child td {
 
 .breadcrumb {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 4px;
     color: var(--text-muted);
@@ -1937,6 +1979,10 @@ tr:last-child td {
 
     .nav-open .sidebar {
         transform: none;
+    }
+
+    .sidebar-resizer {
+        display: none;
     }
 
     .nav-open .scrim {

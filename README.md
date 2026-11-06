@@ -101,7 +101,7 @@ The usual Laravel nginx config already serves `public/docs`. The `/docs` Laravel
 | Source | Becomes |
 | --- | --- |
 | Routes under a portal's `prefixes` | Endpoints in that portal |
-| Controller folder under the portal's `controllers` namespace | Sidebar group and tag |
+| Controller folder under the portal's `controllers` namespace | Sidebar group and nested folders, to any depth |
 | First line of the controller method's PHPDoc | Endpoint summary (otherwise derived from the method name) |
 | `auth:<guard>` middleware | Lock icon and Bearer token |
 | `permission:a\|b` middleware | "Permissions" note |
@@ -156,7 +156,7 @@ paths:
       description: Returns the orders visible to the current user.
 ```
 
-Override `tags` (and `x-group` for the group heading) to move an endpoint in the sidebar.
+Override `tags` (and `x-group` for the group heading) to move an endpoint in the sidebar. Separate levels with ` / ` to nest it, e.g. `Forecast / Monthly`.
 
 ## Commands
 

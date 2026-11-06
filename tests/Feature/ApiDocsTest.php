@@ -3,8 +3,10 @@
 namespace Hightower9\ApiDocs\Tests\Feature;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Route;
 use Hightower9\ApiDocs\ApiDocsBuilder;
 use Hightower9\ApiDocs\Http\ApiDocsController;
+use Hightower9\ApiDocs\Tests\Fixtures\Sales\Forecast\Monthly\ReportController;
 use Hightower9\ApiDocs\Tests\TestCase;
 
 /**
@@ -110,6 +112,20 @@ class ApiDocsTest extends TestCase
 
         $this->assertContains('General', $groups);
         $this->assertNotContains('Hightower9', $groups);
+    }
+
+    /**
+     * Every folder level stays in the tag, joined by " / " for the docs page to nest.
+     */
+    public function test_nested_controller_folders_keep_every_level_in_the_tag(): void
+    {
+        Route::get('api/demo/reports', [ReportController::class, 'index']);
+
+        app(ApiDocsBuilder::class)->build(['demo']);
+
+        $sales = collect($this->spec()['x-tagGroups'])->firstWhere('name', 'Sales');
+
+        $this->assertSame(['Forecast / Monthly'], $sales['tags']);
     }
 
     /**
